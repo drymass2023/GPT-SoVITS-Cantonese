@@ -15,7 +15,8 @@ import sys, numpy as np, traceback, pdb
 import os.path
 from glob import glob
 from tqdm import tqdm
-from text.cleaner import clean_text
+from text.cleaner import chinese_dialect_cleaners
+from text.cantonese import CantoneseLanguageModule, symbols
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 import numpy as np
@@ -79,23 +80,28 @@ if os.path.exists(txt_path) == False:
         return phone_level_feature.T
 
     def process(data, res):
-        for name, text, lan in data:
-            try:
-                name = os.path.basename(name)
-                phones, word2ph, norm_text = clean_text(
-                    text.replace("%", "-").replace("￥", ","), lan
+     for name, text, lan in data:    
+      try:
+        name = os.path.basename(name)
+        if lan == "zh":
+          language_module_instance = CantoneseLanguageModule()
+        else:
+          raise NotImplementedError(f"Language module for {lan} is not implemented.")
+
+        phones, word2ph, norm_text = chinese_dialect_cleaners(
+                    text.replace("%", "-").replace("￥", ","),language_module_instance,symbols
                 )
-                path_bert = "%s/%s.pt" % (bert_dir, name)
-                if os.path.exists(path_bert) == False and lan == "zh":
-                    bert_feature = get_bert_feature(norm_text, word2ph)
-                    assert bert_feature.shape[-1] == len(phones)
-                    # torch.save(bert_feature, path_bert)
-                    my_save(bert_feature, path_bert)
-                phones = " ".join(phones)
-                # res.append([name,phones])
-                res.append([name, phones, word2ph, norm_text])
-            except:
-                print(name, text, traceback.format_exc())
+        path_bert = "%s/%s.pt" % (bert_dir, name)
+        if os.path.exists(path_bert) == False and lan == "zh":
+          bert_feature = get_bert_feature(norm_text, word2ph)
+          assert bert_feature.shape[-1] == len(phones)
+          # torch.save(bert_feature, path_bert)
+          my_save(bert_feature, path_bert)
+          phones = " ".join(phones)
+          # res.append([name,phones])
+          res.append([name, phones, word2ph, norm_text])
+      except:
+          print(name, text, traceback.format_exc())
 
     todo = []
     res = []
