@@ -8,8 +8,8 @@ gpt_path = ""
 is_half = eval(os.environ.get("is_half","True"))
 is_share=False
 
-cnhubert_path = "GPT_SoVITS/pretrained_models/chinese-hubert-base"
-bert_path = "GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large"
+cnhubert_path = "GPT_SoVITS/pretrained_models/wav2vec2-large-xlsr-cantonese"
+bert_path = "GPT_SoVITS/pretrained_models/bart-base-cantonese"
 pretrained_sovits_path = "GPT_SoVITS/pretrained_models/s2G488k.pth"
 pretrained_gpt_path = "GPT_SoVITS/pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt"
 
