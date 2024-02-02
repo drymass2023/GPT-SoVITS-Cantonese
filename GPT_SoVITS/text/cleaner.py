@@ -27,21 +27,24 @@ def chinese_dialect_cleaners(text, language_module, symbols):
         norm_text = ' '.join(texts)
         
     if language_module.language == "zh":
-        phones, word2ph = language_module.g2p(norm_text)
-        print("Normalized Text (norm_text):", norm_text)
-        print("Length of Normalized Text (norm_text):", len(norm_text))
+     phones, word2ph = language_module.g2p(norm_text)
+     print("Normalized Text (norm_text):", norm_text)
+     print("Length of Normalized Text (norm_text):", len(norm_text))
 
-        print("Phones (phones):", phones)
-        print("Length of Phones (phones):", len(phones))
+     print("Phones (phones):", phones)
+     print("Length of Phones (phones):", len(phones))
 
-        print("Word to Phoneme Mapping (word2ph):", word2ph)
-        print("Length of Word to Phoneme Mapping (word2ph):", len(word2ph))
-        norm_text_list = norm_text.split(' ') 
-        assert len(phones) == sum(word2ph), "Mismatch in phones and word2ph lengths"
-        assert len(norm_text) == len(word2ph), "Mismatch in normalized text and word2ph lengths"
+     print("Word to Phoneme Mapping (word2ph):", word2ph)
+     print("Length of Word to Phoneme Mapping (word2ph):", len(word2ph))
+     norm_text_list = norm_text.split(' ')
+     print("Length of Normalized Text List (norm_text_list):", len(norm_text_list))
+
+     assert len(norm_text_list) == len(phones), "Mismatch in normalized text list and phones lengths"
+     assert len(phones) == sum(word2ph), "Mismatch in phones and word2ph lengths"
+     
     else:
-        phones = language_module.g2p(norm_text)
-        word2ph = None
+     phones = language_module.g2p(norm_text)
+     word2ph = None
 
     # Ensure that the phonemes are all in the expected symbol set
     for ph in phones:
