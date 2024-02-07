@@ -48,30 +48,32 @@ class CantoneseLanguageModule:
         text = self.number_to_cantonese(text.upper())
         text = self.latin_to_cantonese(text)
 
-        # Use the Jyutping conversion here and assume the return is a list.
-        norm_text = get_jyutping(text)
-        return norm_text
+        return text
+        
     def g2p(self, text):
-      norm_text = self.text_normalize(text)
-      if isinstance(norm_text, list):
-        # Flatten the list if nested and ensure all items are strings
+        # Normalize text
+        norm_text = self.text_normalize(text)
+        # Use ToJyutping to get a list of (character, jyutping) tuples
+        jyutping_tuples = ToJyutping.get_jyutping_list(norm_text)
+        
         phones = []
-        for item in norm_text:
-            if isinstance(item, list):
-                phones += item  # If 'item' is a sublist, add its items to 'phones'
-            elif isinstance(item, str):
-                phones.append(item)  # If 'item' is already a string, append it
-            # If 'item' is a tuple (or another type), handle it accordingly here
-            # e.g., if you expect a tuple, you might want to do something with it
-            # You need to know the structure that `get_jyutping` function returns
-      else:
-        phones = norm_text.split()  # If 'norm_text' is a string, split into list
+        word2ph = []
+        
+        for char, jyutping in jyutping_tuples:
+            if jyutping:
+                # Split the jyutping if it's not already a list of phonemes
+                phonemes = jyutping.split()
+                phones.extend(phonemes)
+                word2ph.append(len(phonemes))
+            else:
+                # Handle non-convertible characters (punctuation, etc.)
+                continue
 
-    # Now create a mapping value for each phoneme
-    # This simple example just creates a mapping of '1', but you can adjust
-      word2ph = [1] * len(phones)
-    
-      return phones, word2ph    
+        # Now 'phones' should contain only valid Jyutping phonemes
+        # and 'word2ph' the phoneme count for each word.
+        
+        return phones, word2ph
+        
     def number_to_cantonese(self, text):
         # Convert numerals to written Cantonese using cn2an library.
         return re.sub(r'\d+(?:\.?\d+)?', lambda x: cn2an.an2cn(x.group(), "low"), text)
@@ -81,8 +83,20 @@ class CantoneseLanguageModule:
         for latin, ipa in latin_to_ipa.items():
             text = text.replace(latin, ipa + ' ')
         return text
-
+    
+    def cantonese_to_ipa(text):
+      converter = opencc.OpenCC('jyutjyu')  # Create a new instance of the converter for use in this function
+      text = CantoneseLanguageModule.number_to_cantonese(text.upper())
+      text = converter.convert(text).replace('-', '').replace('$', ' ')
+      text = re.sub(r'[A-Z]', lambda x: latin_to_ipa(x.group())+' ', text)
+      text = re.sub(r'[、；：]', '，', text)
+      text = re.sub(r'\s*，\s*', ', ', text)
+      text = re.sub(r'\s*。\s*', '. ', text)
+      text = re.sub(r'\s*？\s*', '? ', text)
+      text = re.sub(r'\s*！\s*', '! ', text)
+      text = re.sub(r'\s*$', '', text)
+      return text
 # Utility function to convert text to Jyutping (placed outside the class for global access)
 def get_jyutping(text):
     return ToJyutping.get_jyutping_list(text)
-    
+   
